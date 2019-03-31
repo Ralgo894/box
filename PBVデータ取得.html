@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ja" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+  </head>
+  <body>
+    <textarea id="optionTextarea" rows="8" cols="80"></textarea>
+    <button id="button">取得</button>
+
+    <script type="text/javascript">
+    var element = document.getElementById('button');
+    element.addEventListener('click', loadDataWithAjax);
+
+    function getData(url) {
+      return new Promise(function(resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function() {
+          if (xhr.readyState == 4) {
+            if(xhr.status == 200) {
+              resolve(xhr.responseText);
+            }
+            else {
+              reject(Error(xhr.statusText));
+            }
+          }
+        };
+        xhr.onerror = function() {
+          reject(Error("Network Error"));
+        };
+        xhr.open('GET', url);
+        xhr.send(null);
+      });
+    }
+
+    function loadDataWithAjax() {
+      var optionTextarea = document.getElementById('optionTextarea');
+      var url = optionTextarea.value.replace(/(\r|\n|\r\n)/g, '');
+
+      if (optionTextarea.value == '') {
+        optionTextarea.value = 'URLが無効です。';
+        return;
+      }
+
+      if (/https\:\/\/www\.dropbox\.com\/s\/.+?\?dl=0/.test(url)) {
+        url = url.replace(/^(.+?)www\.dropbox\.com(.+?)\?dl=0$/, '$1dl.dropboxusercontent.com$2');
+      }
+
+      getData(url)
+      .then(res => {
+        optionTextarea.value = res;
+      },
+      err => {
+        optionTextarea.value = 'URLが無効です。';
+        alert(err);
+      });
+    }
+    </script>
+  </body>
+</html>
